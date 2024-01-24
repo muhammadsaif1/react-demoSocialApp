@@ -1,3 +1,5 @@
+import { Users } from "../../dummyData";
+import CloseFriends from "../closeFriends/CloseFriends";
 import classes from "./sidebar.module.css"
 import { Bookmark, Chat, Group, HelpOutline, PlayCircleFilledOutlined, RssFeed, School, WorkOutline,Event } from "@mui/icons-material";
 
@@ -46,10 +48,9 @@ const Sidebar = () => {
                 <button className={classes.sidebarButton}>Show More</button>
         <hr className={classes.sidebarHr} />
         <ul className={classes.sidebarFriendList}>
-          <li className={classes.sidebarFriend}>
-            <img className={classes.sidebarFriendImage} src="/assets/person/2.jpeg" alt=""></img>
-            <span className={classes.sidebarFriendName}>Jane Doe</span>
-          </li>
+          {Users.map(u=>(
+            <CloseFriends key={u.id} user={u} />
+          ))}
         </ul>
             </div>
         </div>
