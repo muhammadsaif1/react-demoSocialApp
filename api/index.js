@@ -10,6 +10,7 @@ const authRoute = require("./routes/auth");
 const postRoute = require("./routes/posts");
 const router = express.Router();
 const path = require("path");
+const { log, Console } = require("console");
 
 dotenv.config();
 
@@ -20,6 +21,13 @@ mongoose.connect(
     console.log("Connected to MongoDB");
   }
 );
+
+// mongoose.connect("mongodb://localhost:27017/Social-app", {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// },()=>{console.log("mONGOdB cONNECTED")}
+// );
+
 app.use("/images", express.static(path.join(__dirname, "public/images")));
 
 //middleware
