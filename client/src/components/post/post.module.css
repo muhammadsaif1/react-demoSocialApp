@@ -29,6 +29,10 @@
     object-fit: cover;
 }
 
+.linkofProfilePicture{
+    text-decoration: none;
+}
+
 .postUsername{
     font-size: 15px;
     font-weight: 500;

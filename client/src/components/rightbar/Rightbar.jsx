@@ -1,12 +1,61 @@
 import classes from "./rightbar.module.css";
 import { Users } from "../../dummyData";
 import Online from "../online/Online";
+import { useContext, useEffect, useState } from "react";
+import axios from "axios";
+import {Link} from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
+import { Add, Remove } from "@mui/icons-material";
 
-const Rightbar = ({profile}) => {
+const Rightbar = ({user}) => {
+  const PF = process.env.REACT_APP_PUBLIC_FLODER;
+  const [friends,setFriends] = useState([]);
+  const {user:currentUser,dispatch} = useContext(AuthContext);
+  const [followed,setFollowed] = useState( currentUser.followings.include(user?._id));
+  useEffect(()=>{
+setFollowed(    currentUser.followings.include(user?._id))
+  },[currentUser,user._id]) 
+
+
+  useEffect(()=>{
+    const getFriends = async() =>{
+      try {
+        const friendList = await axios.get("/users/friends"+user._id);
+        setFriends(friendList.data);
+      } catch (err) {
+        console.log(err)
+      }
+    };
+    getFriends();
+  },[user]);
+
+  const followHandler = async() =>{
+    try {
+      if (followed) {
+        await axios.put("/users/"+user._id+"/unfollow",{userId:currentUser._id})
+        dispatch({type:"UNFOLLOW",payload:user._id})
+      }else{
+        
+        await axios.put("/users/"+user._id+"/follow",{userId:currentUser._id})
+        dispatch({type:"FOLLOW",payload:user._id})
+      }
+    } catch (err) {
+      console.log(err)
+    }
+    setFollowed(!followed)
+  }
+
 
   const HomeRightbar = ()=>{
     return(
       <>
+      {user.username !== currentUser.username && (
+        <button className={classes.rightbarFollowButton} onClick={followHandler}>
+        {followed ? "Unfollow" : "Follow"}
+        {followed ? <Remove/> : <Add/>}
+        
+        </button>
+      )}
         <div className={classes.birthdayContainer}>
           <img className={classes.birthdayImg} src="/assets/gift.png" alt="" />
           <span className={classes.birthdayText}>
@@ -31,43 +80,27 @@ const Rightbar = ({profile}) => {
       <div className={classes.rightbarInfo}>
         <div className={classes.rightbatInfoItem}>
           <span className={classes.rightbarInfoKey}>City:</span>
-          <span className={classes.rightbarInfoValue}>Hala New</span>
+          <span className={classes.rightbarInfoValue}>{user.city}</span>
         </div>
         <div className={classes.rightbatInfoItem}>
           <span className={classes.rightbarInfoKey}>From:</span>
-          <span className={classes.rightbarInfoValue}>Pakistan</span>
+          <span className={classes.rightbarInfoValue}>{user.from}</span>
         </div>
         <div className={classes.rightbatInfoItem}>
           <span className={classes.rightbarInfoKey}>Relationship:</span>
-          <span className={classes.rightbarInfoValue}>In a Relationship</span>
+          <span className={classes.rightbarInfoValue}>{user.relationship ===1 ? "Single" : user.relationship===2 ? "Married" : "-"}</span>
         </div>
       </div>
       <h4 className={classes.rightbatTitle}>User friends</h4>
       <div className={classes.rightbarFollowings}>
+      {friends.map((friend)=>(
+          <Link to={"/profile"+friend.username} style={{textDecoration:"none"}}>
         <div className={classes.rightbarFollowing}>
-          <img className={classes.rightbarFollowingImage} src="assets/person/1.jpeg" alt="" />
-          <span className={classes.rightbarFollowingName}>John Carter</span>
+          <img className={classes.rightbarFollowingImage} src={friend.profilePicture ? PF+friend.profilePicture : PF+"person/noAvatar.png"} alt="" />
+          <span className={classes.rightbarFollowingName}>{friend.username}</span>
         </div>
-        <div className={classes.rightbarFollowing}>
-          <img className={classes.rightbarFollowingImage} src="assets/person/2.jpeg" alt="" />
-          <span className={classes.rightbarFollowingName}>John Carter</span>
-        </div>
-        <div className={classes.rightbarFollowing}>
-          <img className={classes.rightbarFollowingImage} src="assets/person/3.jpeg" alt="" />
-          <span className={classes.rightbarFollowingName}>John Carter</span>
-        </div>
-        <div className={classes.rightbarFollowing}>
-          <img className={classes.rightbarFollowingImage} src="assets/person/4.jpeg" alt="" />
-          <span className={classes.rightbarFollowingName}>John Carter</span>
-        </div>
-        <div className={classes.rightbarFollowing}>
-          <img className={classes.rightbarFollowingImage} src="assets/person/5.jpeg" alt="" />
-          <span className={classes.rightbarFollowingName}>John Carter</span>
-        </div>
-        <div className={classes.rightbarFollowing}>
-          <img className={classes.rightbarFollowingImage} src="assets/person/6.jpeg" alt="" />
-          <span className={classes.rightbarFollowingName}>John Carter</span>
-        </div>
+        </Link>
+      ))}
       </div>
     </>
     )
@@ -77,7 +110,7 @@ const Rightbar = ({profile}) => {
   return (
     <div className={classes.rightbar}>
       <div className={classes.rightbarWrapper}>
-      {profile ? <ProfileRightbar /> : <HomeRightbar />}
+      {user ? <ProfileRightbar /> : <HomeRightbar />}
       </div>
     </div>
   );

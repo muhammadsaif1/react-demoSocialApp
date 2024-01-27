@@ -1,12 +1,20 @@
 import classes from "./Topbar.module.css";
 // import { Search } from "@mui/icons-material";
 import { Chat, Notifications, Person, Search } from "@mui/icons-material";
-
+import { useContext } from "react";
+import {Link} from "react-router-dom";
+import {AuthContext} from "../../context/AuthContext"
 const Topbar = () => {
+
+    const {user} = useContext(AuthContext);
+    const PF = process.env.REACT_APP_PUBLIC_FLODER;
+
     return (
         <div className={classes.topbarContainer}>
             <div className={classes.topbarLeft}>
+            <Link className={classes.linkStyle} to="/">
                 <span className={classes.topbarLogo}>Saif-social</span>
+                </Link>
             </div>
             <div className={classes.topbarCenter}>
                 <div className={classes.searchbar}>
@@ -33,8 +41,9 @@ const Topbar = () => {
                         <span className={classes.topbarIconBadge}>1</span>
                     </div>
                 </div>
-
-                <img src="/assets/person/1.jpeg" alt="" className={classes.topbarImg}></img>
+                <Link to={`/profile${user.username}</div>`}>
+                <img src={ user.profilePicture ? PF+user.profilePicture: PF+"saif.jpg"}alt="" className={classes.topbarImg}></img>
+                </Link>            
             </div>
         </div>
     );

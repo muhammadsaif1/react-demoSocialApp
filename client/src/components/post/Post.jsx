@@ -1,25 +1,51 @@
 import { MoreVert } from "@mui/icons-material";
 import classes from "./post.module.css"
-import { Users } from "../../dummyData";
-import { useState } from "react";
+// import { Users } from "../../dummyData";
+import { useState, useEffect, useContext } from "react";
+import axios from "axios";
+// import {format} from "timeago.js";
+import { Link } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 const Post = ({post}) => {
-    const [like,setLike] = useState(post.like);
+    const [like,setLike] = useState(post.likes.length);
     const [isLiked,setIsLiked] = useState(false);
+    const [user,setUser] = useState({});
+    const PF = process.env.REACT_APP_PUBLIC_FLODER;
+    const {user:currentUser} = useContext(AuthContext);
+
+
+    useEffect(()=>{
+        setIsLiked(post.likes.includes(currentUser._id))
+    },[currentUser._id,post.likes])
+
+    useEffect(()=>{
+        const fetchUser = async () =>{
+            const res = await  axios.get(`/users?userId=${post.userId}`)
+            setUser(res.data)
+        };
+            fetchUser();
+    },[post.userId]);
 
     const likeHandler=()=>{
+        try{
+                axios.put("/posts/"+post._id+"/like",{userId:currentUser._id})
+        }catch(err){}
         setLike(isLiked ? like-1 : like+1)
         setIsLiked(!isLiked)
     }
-
+ 
     return (
         <div className={classes.post}>
         <div className={classes.postWrapper}>
             <div className={classes.postTop}>
                 <div className={classes.postTopLeft}>
-                    <img className={classes.postProfileImg} src={Users.filter(u=>u.id===post.userId)[0].profilePicture} alt=""/>
-                    <span className={classes.postUsername}> {Users.filter(u=>u.id===post.userId)[0].username} </span>
-                    <span className={classes.postDate}>{post.date}</span>
+                <Link to={`profile${user.username}`} className={classes.linkofProfilePicture} >
+
+                    <img className={classes.postProfileImg} src={user.profilePicture ?PF+ user.profilePicture :PF+"person/noAvatar.png" } alt=""/>
+                </Link>
+                    <span className={classes.postUsername}> {user.username || PF+"person/noAvatar.png"} </span>
+                    <span className={classes.postDate}>{""}</span>
                 </div>
                 <div className={classes.postTopRight}>
                     <MoreVert/>
@@ -27,12 +53,12 @@ const Post = ({post}) => {
             </div>
             <div className={classes.postCenter}>
                 <span className={classes.postText}>{post?.desc}</span>
-                <img className={classes.postImg} src={post.photo}alt="" />
+                <img className={classes.postImg} src={PF+post.img}alt="" />
             </div>
             <div className={classes.postBottom}>
                 <div className={classes.postBottomLeft}>
-                    <img  className={classes.likeIcon} src="/assets/like.png" onClick={likeHandler} alt="" />
-                    <img className={classes.likeIcon} src="/assets/heart.png" onClick={likeHandler} alt="" />
+                    <img  className={classes.likeIcon} src={`${PF}like.png`} onClick={likeHandler} alt="" />
+                    <img className={classes.likeIcon} src={`${PF}heart.png`} onClick={likeHandler} alt="" />
                     <span className={classes.postLikeCounter}>{like} people like it</span>
                 </div>
                 <div className={classes.postBottomRight}>
